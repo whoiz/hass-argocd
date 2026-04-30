@@ -1,0 +1,13 @@
+{
+  "domain": "argocd",
+  "name": "ArgoCD",
+  "version": "0.1.0",
+  "documentation": "https://github.com/yourrepo/hass-argocd",
+  "issue_tracker": "https://github.com/yourrepo/hass-argocd/issues",
+  "requirements": ["httpx>=0.24.0"],
+  "codeowners": ["@yourusername"],
+  "config_flow": true,
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "dependencies": []
+}
