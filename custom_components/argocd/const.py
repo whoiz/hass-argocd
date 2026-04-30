@@ -8,6 +8,7 @@ DEFAULT_SCAN_INTERVAL = 60  # seconds
 CONF_URL = "url"
 CONF_TOKEN = "token"
 CONF_SCAN_INTERVAL = "scan_interval"
+CONF_VERIFY_SSL = "verify_ssl"
 
 # Attributes
 ATTR_LAST_SYNC = "last_sync"

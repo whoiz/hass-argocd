@@ -13,11 +13,11 @@ _LOGGER = logging.getLogger(__package__)
 class ArgoCDApiClient:
     """Define the ArgoCD API client."""
 
-    def __init__(self, url: str, token: str, verify_ssl: bool = True) -> None:
+    def __init__(self, url: str, token: str, verify_ssl: bool) -> None:
         """Initialize the client."""
         self._url = url.rstrip("/")
         self._token = token
-        self._verify_ssl = verify_ssl
+            self._verify_ssl = verify_ssl
         self._client = httpx.AsyncClient(
             base_url=self._url,
             headers={
@@ -25,6 +25,7 @@ class ArgoCDApiClient:
                 "Content-Type": "application/json",
             },
             verify=self._verify_ssl,
+        )
         )
 
     async def get_applications(self) -> List[Dict[str, Any]]:

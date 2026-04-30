@@ -9,7 +9,7 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DOMAIN
+from .const import CONF_SCAN_INTERVAL, CONF_TOKEN, CONF_URL, DOMAIN, CONF_VERIFY_SSL
 from .api import ArgoCDApiClient
 
 _LOGGER = logging.getLogger(__package__)
@@ -22,9 +22,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     url = entry.data[CONF_URL]
     token = entry.data[CONF_TOKEN]
-    scan_interval = entry.data.get(CONF_SCAN_INTERVAL, 60)
+    scan_interval = entry.data.get(CONF_SCAN_INTERVAL)
+    verify_ssl = entry.data.get(CONF_VERIFY_SSL)
 
-    api_client = ArgoCDApiClient(url, token)
+    api_client = ArgoCDApiClient(url, token, verify_ssl)
 
     async def async_update_data():
         """Fetch data from API endpoint. """

@@ -21,6 +21,7 @@ DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_URL): str,
         vol.Required(CONF_TOKEN): str,
         vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): int,
+        vol.Optional(CONF_VERIFY_SSL, default=True): bool,
     }
 )
 
@@ -59,6 +60,7 @@ class ArgoCDConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         CONF_URL: url,
                         CONF_TOKEN: token,
                         CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL],
+                        CONF_VERIFY_SSL: user_input[CONF_VERIFY_SSL],
                     },
                 )
 
