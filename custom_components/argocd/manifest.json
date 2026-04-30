@@ -1,7 +1,7 @@
 {
   "domain": "argocd",
   "name": "ArgoCD",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "documentation": "https://github.com/whoiz/hass-argocd",
   "issue_tracker": "https://github.com/whoiz/hass-argocd/issues",
   "requirements": ["httpx>=0.24.0"],
