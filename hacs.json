@@ -1,0 +1,9 @@
+{
+  "name": "ArgoCD",
+  "country": "DE",
+  "domains": ["sensor"],
+  "homeassistant": "2024.1",
+  "persistent_directory": null,
+  "zip_release": false,
+  "torproxy": false
+}
