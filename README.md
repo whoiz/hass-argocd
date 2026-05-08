@@ -11,7 +11,9 @@ Integrate ArgoCD applications into HomeAssistant as entities, monitor their stat
     *   **Health Status**: `Healthy`, `Degraded`, `Missing`, etc.
     *   **Last Sync**: Timestamp of the last successful synchronization.
     *   **Revision**: The currently deployed Git revision.
+    *   **External URLs**: Ingress and service URLs extracted from the application resource tree — ideal for building dynamic dashboards that link directly to your deployed apps.
 *   **Synchronization Buttons**: A dedicated button entity for each application allows you to manually trigger a synchronization directly from HomeAssistant.
+*   **Pod Management Service**: Delete pods directly from HomeAssistant via a service call.
 *   **UI Configuration**: Easy setup through the HomeAssistant UI.
 
 ## Installation
@@ -65,15 +67,21 @@ For each ArgoCD application, the integration will create the following entities:
     *   `sensor.your_app_name_health_status`
     *   `sensor.your_app_name_last_sync`
     *   `sensor.your_app_name_revision`
+    *   `sensor.your_app_name_external_urls` — State shows the first URL; attribute `external_urls` contains all URLs.
 *   **Button Entity**:
     *   `button.your_app_name_sync`
 
 ## Services
 
-A service is available for triggering application synchronizations through automations:
+Services are available for triggering application synchronizations and deleting pods through automations or the Developer Tools:
 
 *   `argocd.sync_app`:
     *   `application_name` (required): The name of the ArgoCD application to synchronize.
+
+*   `argocd.delete_pod`:
+    *   `application_name` (required): The ArgoCD application that owns the pod.
+    *   `pod_name` (required): The name of the pod to delete.
+    *   `namespace` (required): The Kubernetes namespace where the pod lives.
 
     **Example Automation (YAML):**
 
@@ -93,7 +101,7 @@ A service is available for triggering application synchronizations through autom
 
 ## Example Lovelace Dashboard Configuration
 
-Here's an example of how you can display your ArgoCD applications in a Lovelace dashboard:
+### Static Example (Single App)
 
 ```yaml
 type: entities
@@ -113,6 +121,82 @@ entities:
     icon: mdi:arrows-clockwise
   - type: divider
 ```
+
+### Dynamic Dashboard (All Apps)
+
+For a dashboard that **automatically shows every ArgoCD application** as it is added or removed, install the [auto-entities](https://github.com/thomasloven/lovelace-auto-entities) and [button-card](https://github.com/custom-cards/button-card) cards from HACS.
+
+```yaml
+type: custom:auto-entities
+card:
+  type: grid
+  columns: 1
+  square: false
+card_param: cards
+filter:
+  include:
+    - entity_id: sensor.*_sync_status
+      options:
+        type: custom:button-card
+        entity: this.entity_id
+        show_name: true
+        show_state: true
+        show_icon: true
+        layout: icon_name_state2nd
+        name: "[[[ return entity.attributes.application_name ]]]"
+        state_display: >-
+          [[[
+            const app = entity.attributes.application_name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+            const health = states['sensor.' + app + '_health_status'];
+            const urlSensor = states['sensor.' + app + '_external_urls'];
+            const urls = urlSensor ? urlSensor.attributes.external_urls : [];
+            let text = 'Sync: ' + entity.state + '  |  Health: ' + (health ? health.state : '?');
+            if (urls && urls.length > 0) {
+              text += '  |  URL: ' + urls[0];
+            }
+            return text;
+          ]]]
+        icon: mdi:kubernetes
+        styles:
+          card:
+            - padding: 16px
+          name:
+            - white-space: nowrap
+            - overflow: visible
+            - font-size: 16px
+          icon:
+            - width: 40px
+            - color: >-
+                [[[
+                  if (entity.state === 'Synced') return 'var(--success-color)';
+                  if (entity.state === 'OutOfSync') return 'var(--warning-color)';
+                  return 'var(--error-color)';
+                ]]]
+          state:
+            - font-size: 12px
+            - color: var(--secondary-text-color)
+        tap_action:
+          action: url
+          url_path: >-
+            [[[
+              const app = entity.attributes.application_name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+              const urlSensor = states['sensor.' + app + '_external_urls'];
+              const urls = urlSensor ? urlSensor.attributes.external_urls : [];
+              return (urls && urls.length > 0) ? urls[0] : '#';
+            ]]]
+        double_tap_action:
+          action: call-service
+          service: argocd.sync_app
+          service_data:
+            application_name: "[[[ return entity.attributes.application_name ]]]"
+```
+
+**What it does:**
+*   Automatically finds every `*_sync_status` sensor (one per ArgoCD app).
+*   Renders a compact **button-card** per app with app name, sync status, health, and pod count.
+*   **URLs** are shown as clickable links below each card (opens in a new tab).
+*   **Tap** the card to trigger a sync. **Hold** for more info.
+*   When you add a new app in ArgoCD, it appears automatically — no manual edits needed.
 
 ## Support
 

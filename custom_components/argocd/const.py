@@ -16,6 +16,9 @@ ATTR_HEALTH_STATUS = "health_status"
 ATTR_SYNC_STATUS = "sync_status"
 ATTR_REVISION = "revision"
 ATTR_APPLICATION_NAME = "application_name"
+ATTR_EXTERNAL_URLS = "external_urls"
+ATTR_POD_NAME = "pod_name"
+ATTR_NAMESPACE = "namespace"
 
 # Sensor types
 SENSOR_TYPES = {
@@ -35,7 +38,12 @@ SENSOR_TYPES = {
         "name": "Revision",
         "icon": "mdi:git",
     },
+    "external_urls": {
+        "name": "External URLs",
+        "icon": "mdi:web",
+    },
 }
 
 # Service names
 SERVICE_SYNC_APP = "sync_app"
+SERVICE_DELETE_POD = "delete_pod"

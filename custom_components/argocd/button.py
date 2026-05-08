@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 from homeassistant.components.button import ButtonEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -24,6 +26,10 @@ async def async_setup_entry(
     api_client: ArgoCDApiClient = hass.data[DOMAIN + "_api"][config_entry.entry_id]
 
     entities = []
+    if not coordinator.data:
+        _LOGGER.debug("No applications yet, skipping button setup")
+        async_add_entities(entities)
+        return
     for app in coordinator.data:
         app_name = app.get("metadata", {}).get("name", "unknown")
         entities.append(

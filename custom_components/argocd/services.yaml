@@ -1,0 +1,22 @@
+delete_pod:
+  name: Delete Pod
+  description: Delete a pod within an ArgoCD application.
+  fields:
+    application_name:
+      name: Application Name
+      description: Name of the ArgoCD application that owns the pod.
+      required: true
+      selector:
+        text:
+    pod_name:
+      name: Pod Name
+      description: Name of the pod to delete.
+      required: true
+      selector:
+        text:
+    namespace:
+      name: Namespace
+      description: Kubernetes namespace where the pod lives.
+      required: true
+      selector:
+        text:

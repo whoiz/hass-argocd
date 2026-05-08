@@ -24,6 +24,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import (
     ATTR_APPLICATION_NAME,
+    ATTR_EXTERNAL_URLS,
     ATTR_HEALTH_STATUS,
     ATTR_LAST_SYNC,
     ATTR_REVISION,
@@ -46,6 +47,10 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]
 
     entities = []
+    if not coordinator.data:
+        _LOGGER.debug("No applications yet, skipping sensor setup")
+        async_add_entities(entities)
+        return
     for app in coordinator.data:
         app_name = app.get("metadata", {}).get("name", "unknown")
         for sensor_type in SENSOR_TYPES:
@@ -106,6 +111,9 @@ class ArgoCDApplicationSensor(CoordinatorEntity, SensorEntity):
             return None
         if self._sensor_type == "revision":
             return status.get("sync", {}).get("revision", "Unknown")
+        if self._sensor_type == "external_urls":
+            urls = status.get("summary", {}).get("externalURLs", [])
+            return urls[0] if urls else None
         return None
 
     @property
@@ -125,5 +133,8 @@ class ArgoCDApplicationSensor(CoordinatorEntity, SensorEntity):
             attrs[ATTR_HEALTH_STATUS] = status.get("health", {}).get("status")
             attrs[ATTR_REVISION] = status.get("sync", {}).get("revision")
             attrs[ATTR_LAST_SYNC] = status.get("sync", {}).get("finishedAt")
+
+        if self._sensor_type == "external_urls":
+            attrs[ATTR_EXTERNAL_URLS] = status.get("summary", {}).get("externalURLs", [])
 
         return attrs

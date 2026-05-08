@@ -11,7 +11,7 @@ from homeassistant.const import CONF_URL, CONF_TOKEN, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, DEFAULT_SCAN_INTERVAL
+from .const import DOMAIN, DEFAULT_SCAN_INTERVAL, CONF_VERIFY_SSL
 from .api import ArgoCDApiClient
 
 _LOGGER = logging.getLogger(__package__)
@@ -43,15 +43,20 @@ class ArgoCDConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             token = user_input[CONF_TOKEN]
 
             # Test connection
-            api_client = ArgoCDApiClient(url, token)
+            api_client = None
             try:
+                api_client = await ArgoCDApiClient.create(url, token, user_input[CONF_VERIFY_SSL])
                 apps = await api_client.get_applications()
                 if not apps:
-                    errors["base"] = "no_applications"
+                    _LOGGER.warning("No applications found when testing connection to %s", url)
             except Exception:
                 errors["base"] = "cannot_connect"
             finally:
-                await api_client.close()
+                if api_client is not None:
+                    try:
+                        await api_client.close()
+                    except Exception:
+                        pass
 
             if not errors:
                 return self.async_create_entry(
